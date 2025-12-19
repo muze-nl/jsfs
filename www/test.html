@@ -1,82 +1,77 @@
-<h1>OAuth2 Fetch test with mock service worker</h1>
+<style>
+	output {
+		display: block;
+		border: 1px solid #CCC;
+		border-radius: 5px;
+		font-family: monospace;
+		margin: 1em 0;
+		padding: 5px;
+		white-space: pre;
+	}
+</style>
+<h1>JSFS test with metro</h1>
 <button data-simply-command="fetch" data-simply-value="https://resource-server.mock/protected/">Fetch protected resource</button>
-<button data-simply-command="fetch" data-simply-value="https://resource-server.mock/public/">Fetch public resource</button>
+<button data-simply-command="fetch" data-simply-value="https://solid-nextcloud.muze.nl/apps/solid/@auke/storage/">Fetch public resource</button>
+<button data-simply-command="list" data-simply-value="https://solid-nextcloud.muze.nl/apps/solid/@auke/storage/">List public resource</button>
 
-<script src="https://unpkg.com/msw@0.39.2/lib/iife/index.js"></script>
-<script src="https://unpkg.com/simplyview@2.0.2/js/simply.command.js"></script>
-<script>
-	let loaded = false;
-	let swURL  = document.location.pathname.replace(/\/[^/]*\/?$/, '') + '/mockServiceWorker.js'
+<output id="response"></output>
 
-	async function startMSW() {
-		if (!loaded) {
-			let {default:handlers} = await import('../src/mocks/handlers.js')
-			const worker = window.MockServiceWorker.setupWorker(...handlers)
-			return worker.start({
-				serviceWorker: {
-					url: swURL
-				}
-			})
-		} else {
-			return new Promise((resolve, reject) => {
-				resolve()
-			})
-		}
-	}
-	window.startMSW = startMSW
-</script>
-<script>
-	let tokenStore = {
-		get: (req) => {
-			let tokens = localStorage.getItem('oauth2tokens') || '{}'
-			return JSON.parse(tokens)
+
+<script src="https://unpkg.com/simplyview@3.4.0/dist/simply.everything.js"></script>
+<script src="https://unpkg.com/@muze-nl/metro@0.6.15/dist/browser.js"></script>
+<script src="/oldm/dist/oldm.js" foo="https://unpkg.com/@muze-nl/oldm@0.3.4/dist/oldm.js"></script>
+<script src="../dist/browser.js"></script>
+<script type="module">
+	import { _, from } from 'https://unpkg.com/@muze-nl/jaqt@0.10.3/src/jaqt.mjs'
+
+	const context = oldm.context({
+		prefixes: {
+		    'ldp':    'http://www.w3.org/ns/ldp#',
+		    'rdf':    'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+		    'dct':    'http://purl.org/dc/terms/',
+		    'stat':   'http://www.w3.org/ns/posix/stat#',
+		    'turtle': 'http://www.w3.org/ns/iana/media-types/text/turtle#',
+		    'schem':  'https://schema.org/',
+		    'solid':  'http://www.w3.org/ns/solid/terms#',
+		    'acl':    'http://www.w3.org/ns/auth/acl#',
+		    'pims':   'http://www.w3.org/ns/pim/space#',
+		    'vcard':  'http://www.w3.org/2006/vcard/ns#',
+		    'foaf':   'http://xmlns.com/foaf/0.1/'
 		},
-		set: (req, tokens) => {
-			localStorage.setItem('oauth2tokens', JSON.stringify(tokens))
-		}
-	}
+		parser: oldm.n3Parser,
+		writer: oldm.n3Writer
+	})
 
-	startMSW()
-	.then(async () => {
-		let {default:oauth2fetch} = await import('../src/Fetch/OAuth2Fetch.js')
-		
-		const commands = simply.command({
-			container: document.body
-		}, {
-			fetch: (el, value) => {
-				let req = new Request(value)
-				req.oauth2 = {
-					endpoints: {
-						authorize: 'https://authorization-server.mock/authorize'
-					},
-					client: {
-						id: 'clientId',
-						secret: 'clientSecret'
-					},
-					grant_type: 'authorization_code',
-					tokenStore: tokenStore,
-					authRedirectURL: window.location.href,
-					scope: 'gimme',
-					callbacks: {
-						authorize: (url) => {
-							// mock authorize, should show a user interface with authorization question
-							return fetch(url)
-							.then((res) => { return res.json() })
-							.then((json) => { return json.token })
-						}
-					}
+	const app = simply.app({
+		commands: {
+			fetch: async function(el, value) {
+				const client = metro.client(value)
+				const response = await client.get()
+				document.getElementById('response').innerText = 
+					response.status+': '+response.statusText+'\n'+await response.text()
+			},
+			list: async function(el, value) {
+				const client = metro.client(value)
+				const response = await client.get()
+				if (!response.ok) {
+					document.getElementById('response').innerText = 
+						response.status+': '+response.statusText+'\n'+await response.text()
+				} else {
+					const ttl = await response.text()
+					const source = context.parse(ttl, value)
+					console.log(source)
+					const resources = from(Object.values(source.subjects))
+					.where({
+						a: 'ldp$Resource'
+					})
+					.select({
+						name: o => jsfs.path.filename(metro.url(o.id).pathname),
+						type: o => o.a.includes('ldp$Container') ? 'folder' : 'file'
+					})
+					document.getElementById('response').innerText =
+						JSON.stringify(resources, null, 4)
 				}
-				console.log(req)
-				oauth2fetch(req)
-				.then(async (response) => {
-					let json = await response.json()
-					alert('result: '+json.result)
-				})
-				.catch((err) => {
-					console.error(err)
-				})
 			}
-		})
-
+		}
 	})
 </script>

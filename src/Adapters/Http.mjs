@@ -1,17 +1,14 @@
-import Path from '../Path.js';
+import Path from '../Path.mjs';
+import { client, url } from '@muze-nl/metro/src/metro.mjs'
 
 export default class HttpAdapter {
     
-    #baseUrl;
+    #client;
     #path;
-    #exceptionHandler;
-    #fetchParams;
 
-    constructor(baseUrl, path='/', exceptionHandler=null, fetchParams={}) {
-        this.#baseUrl = new URL(baseUrl, window.location.href);
+    constructor(metroClient, path='/') {
+        this.#client = client(metroClient)
         this.#path = new Path(path);
-        this.#exceptionHandler = exceptionHandler;
-        this.#fetchParams = fetchParams;
     }
 
     get name() {
@@ -38,16 +35,15 @@ export default class HttpAdapter {
         if (!Path.isPath(path)) {
             throw new TypeError(path+' is not a valid path');
         }
-        return new HttpAdapter(this.#baseUrl.href, path);
+        if (Path.isRelative(path)) {
+            path = Path.collapse(path, this.#path)
+        }
+        return new this.constructor(this.#client, path);
     }
 
     //FIXME: return a jsfs result object instead of http response
     async write(path, contents, metadata=null) {
-        let params = Object.assign({}, this.#fetchParams, {
-            method: 'PUT',
-            body: contents
-        });
-        return this.#fetch(path, params);
+        return this.#client.put({body: contents})
     }
 
     writeStream(path, writer, metadata=null) {
@@ -55,10 +51,7 @@ export default class HttpAdapter {
     }
 
     async read(path) {
-        let params = Object.assign({}, this.#fetchParams, {
-            method: 'GET'
-        });
-        let response = await this.#fetch(path, params);
+        let response = await this.#client.get(path);
         //TODO: create a special jsfsFile class
         //with a toString that returns the contents
         //or better: mimic the File class of the browser
@@ -71,6 +64,7 @@ export default class HttpAdapter {
                 url: response.url
             }
         }
+        //TODO: add middleware in metro client for this
         if (result.type.match(/text\/.*/)) {
             result.contents = await response.text()
         } else if (result.type.match(/application\/json.*/)) {
@@ -86,17 +80,11 @@ export default class HttpAdapter {
     }
 
     async exists(path) {
-        let params = Object.assign({}, this.#fetchParams, {
-            method: 'HEAD'
-        });
-        return this.#fetch(path, params);
+        return this.#client.head(path);
     }
 
     async delete(path) {
-        let params = Object.assign({}, this.#fetchParams, {
-            method: 'DELETE'
-        });
-        return this.#fetch(path, params);
+        return this.#client.delete(path);
     }
 
     async list(path) {
@@ -113,7 +101,7 @@ export default class HttpAdapter {
             });                
         }
 
-        let basePath = Path.collapse(this.#baseUrl.pathname);
+        let basePath = url(this.#client.clientOptions.url).pathname;
         let parentUrl = this.#getUrl(path);
         // TODO: use DOMParser() directly here
         let dom = document.createElement('template');
@@ -150,17 +138,9 @@ export default class HttpAdapter {
     }
 
     #getUrl(path) {
-        path = Path.collapse(this.#baseUrl.pathname + Path.collapse(path));
-        return new URL(path, this.#baseUrl);
-    }
-
-    async #fetch(path, options) {
-        return fetch(this.#getUrl(path), options)
-        .catch(e => {
-            if (!this.#exceptionHandler || !this.#exceptionHandler(url, options, e)) {
-                throw e;
-            }
-        })
+        let basePath = url(this.#client.clientOptions.url).pathname;
+        path = Path.collapse(basePath + Path.collapse(path));
+        return new URL(path, this.#client.clientOptions.url);
     }
 
     #getMimetype(response) {

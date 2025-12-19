@@ -1,6 +1,6 @@
-import JSFS from './FileSystem.js'
-import HttpAdapter from './Adapters/HttpAdapter.js'
-import Path from './Path.js'
+import JSFS from './FileSystem.mjs'
+import HttpAdapter from './Adapters/Http.mjs'
+import Path from './Path.mjs'
 
 const jsfs = {
 	fs: JSFS,

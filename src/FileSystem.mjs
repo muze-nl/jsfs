@@ -1,4 +1,4 @@
-import Path from './Path.js';
+import Path from './Path.mjs';
 
 export default class FileSystem {
 	

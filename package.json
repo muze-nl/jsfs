@@ -3,28 +3,28 @@
   "version": "0.3.0",
   "author": "auke@muze.nl",
   "source": "src/browser.js",
-  "main": "dist/main.js",
+  "main": "src/index.mjs",
   "type": "module",
   "devDependencies": {
-    "esbuild": "^0.25.0",
-    "msw": "^0.36.7"
-  },
-  "msw": {
-    "workerDirectory": "www"
+    "esbuild": "^0.25.0"
   },
   "description": "A filesystem abstraction for remote storage",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build-dev": "esbuild --bundle src/browser.js --outfile=dist/browser.js --sourcemap;",
-    "build": "esbuild --bundle src/browser.js --outfile=dist/browser.min.js --minify --sourcemap;"
+    "build-dev": "esbuild --bundle src/index.mjs --outfile=dist/browser.js --sourcemap;",
+    "build": "esbuild --bundle src/index.mjs --outfile=dist/browser.min.js --minify --sourcemap;"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/poef/jsfs.git"
+    "url": "git+https://github.com/muze-nl/jsfs.git"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/poef/jsfs/issues"
+    "url": "https://github.com/muze-nl/jsfs/issues"
   },
-  "homepage": "https://github.com/poef/jsfs#readme"
+  "homepage": "https://github.com/muze-nl/jsfs#readme",
+  "dependencies": {
+    "@muze-nl/metro": "^0.6.15",
+    "jest": "^30.2.0"
+  }
 }
