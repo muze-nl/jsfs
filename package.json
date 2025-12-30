@@ -1,6 +1,6 @@
 {
   "name": "@muze-nl/jsfs",
-  "version": "0.3.1",
+  "version": "0.3.3",
   "author": "auke@muze.nl",
   "main": "src/index.mjs",
   "type": "module",

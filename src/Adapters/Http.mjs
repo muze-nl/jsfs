@@ -56,7 +56,7 @@ export default class HttpAdapter {
         //with a toString that returns the contents
         //or better: mimic the File class of the browser
         let result = {
-            type: this.#getMimetype(response),
+            type: this.getMimetype(response),
             name: Path.filename(path),
             http: {
                 headers: response.headers,
@@ -95,14 +95,14 @@ export default class HttpAdapter {
         if (supportedContentTypes.includes(result.type.split(';')[0])) {
             var html = result.contents
         } else {
-            let url = this.#getUrl(path);
+            let url = this.getUrl(path);
             throw new TypeError('URL '+url+' is not of a supported content type', {
                 cause: result
             });                
         }
 
         let basePath = url(this.#client.clientOptions.url).pathname;
-        let parentUrl = this.#getUrl(path);
+        let parentUrl = this.getUrl(path);
         // TODO: use DOMParser() directly here
         let dom = document.createElement('template');
         dom.innerHTML = html;
@@ -137,13 +137,13 @@ export default class HttpAdapter {
         })
     }
 
-    #getUrl(path) {
+    getUrl(path) {
         let basePath = url(this.#client.clientOptions.url).pathname;
         path = Path.collapse(basePath + Path.collapse(path));
         return new URL(path, this.#client.clientOptions.url);
     }
 
-    #getMimetype(response) {
+    getMimetype(response) {
         if (response.headers.has('Content-Type')) {
             return response.headers.get('Content-Type')
         } else {

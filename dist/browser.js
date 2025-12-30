@@ -717,7 +717,7 @@
     async read(path) {
       let response2 = await this.#client.get(path);
       let result = {
-        type: this.#getMimetype(response2),
+        type: this.getMimetype(response2),
         name: Path.filename(path),
         http: {
           headers: response2.headers,
@@ -754,13 +754,13 @@
       if (supportedContentTypes.includes(result.type.split(";")[0])) {
         var html = result.contents;
       } else {
-        let url2 = this.#getUrl(path);
+        let url2 = this.getUrl(path);
         throw new TypeError("URL " + url2 + " is not of a supported content type", {
           cause: result
         });
       }
       let basePath = url(this.#client.clientOptions.url).pathname;
-      let parentUrl = this.#getUrl(path);
+      let parentUrl = this.getUrl(path);
       let dom = document.createElement("template");
       dom.innerHTML = html;
       let links = dom.content.querySelectorAll("a[href]");
@@ -786,12 +786,12 @@
         };
       });
     }
-    #getUrl(path) {
+    getUrl(path) {
       let basePath = url(this.#client.clientOptions.url).pathname;
       path = Path.collapse(basePath + Path.collapse(path));
       return new URL(path, this.#client.clientOptions.url);
     }
-    #getMimetype(response2) {
+    getMimetype(response2) {
       if (response2.headers.has("Content-Type")) {
         return response2.headers.get("Content-Type");
       } else {
