@@ -1,8 +1,7 @@
 {
   "name": "@muze-nl/jsfs",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "author": "auke@muze.nl",
-  "source": "src/browser.js",
   "main": "src/index.mjs",
   "type": "module",
   "devDependencies": {

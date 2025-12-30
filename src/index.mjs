@@ -9,6 +9,6 @@ const jsfs = {
 	},
 	path: Path
 }
-window.jsfs = jsfs
+globalThis.jsfs = jsfs
 
 export default jsfs
