@@ -830,7 +830,7 @@
     },
     path: Path
   };
-  window.jsfs = jsfs;
+  globalThis.jsfs = jsfs;
   var index_default = jsfs;
 })();
 //# sourceMappingURL=browser.js.map
