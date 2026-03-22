@@ -87,6 +87,15 @@ The `list` method must return an array of objects with at least these properties
 }
 ```
 
+The `read` method must return an object with at least these properties:
+```javascript
+{
+	type,
+	name,
+	contents,
+}
+```
+
 <a name="license"></a>
 ## License
 
