@@ -46,7 +46,7 @@
           result += "/";
         }
       }
-      return result;
+      return "" + result;
     }
     static isAbsolute(path) {
       if (path instanceof _Path) {
