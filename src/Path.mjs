@@ -49,7 +49,7 @@ export default class Path {
                 result += '/';
             }
         }
-        return result;
+        return ''+result;
     }
 
     static isAbsolute(path) {
