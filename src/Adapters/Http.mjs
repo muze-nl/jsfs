@@ -31,6 +31,10 @@ export default class HttpAdapter {
         return true;
     }
 
+    supportsDirectories() {
+        return false;
+    }
+
     cd(path) {
         if (!Path.isPath(path)) {
             throw new TypeError(path+' is not a valid path');
@@ -83,7 +87,7 @@ export default class HttpAdapter {
         return this.#client.head(path);
     }
 
-    async delete(path) {
+    async remove(path) {
         return this.#client.delete(path);
     }
 

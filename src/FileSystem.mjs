@@ -54,11 +54,11 @@ export default class FileSystem {
 		}
 	}
 
-	async delete(path) {
+	async remove(path) {
 		if (!(path instanceof Path)) {
 			path = new Path(Path.collapse(path, this.#path));
 		}
-		return this.#adapter.delete(path);
+		return this.#adapter.remove(path);
 	}
 
 	async exists(path) {
@@ -73,6 +73,32 @@ export default class FileSystem {
 			path = new Path(Path.collapse(path, this.#path));
 		}
 		return this.#adapter.list(path);
+	}
+
+	async mkdir(path='') {
+		if (!this.#adapter.supportsWrite()) {
+			throw new Error('Adapter '+this.#adapter.name+' is read only.');
+		}
+		if (!this.#adapter.supportsDirectories) {
+			throw new Error('Adapter '+this.#adapter.name+' does not support directories.');
+		}
+		if (!(path instanceof Path)) {
+			path = new Path(Path.collapse(path, this.#path));
+		}
+		return this.#adapter.mkdir(path);		
+	}
+
+	async rmdir(path='') {
+		if (!this.#adapter.supportsWrite()) {
+			throw new Error('Adapter '+this.#adapter.name+' is read only.');
+		}
+		if (!this.#adapter.supportsDirectories) {
+			throw new Error('Adapter '+this.#adapter.name+' does not support directories.');
+		}
+		if (!(path instanceof Path)) {
+			path = new Path(Path.collapse(path, this.#path));
+		}
+		return this.#adapter.rmdir(path);
 	}
 }
 
