@@ -172,11 +172,11 @@
         throw new TypeError("Cannot write contents of type " + typeof contents);
       }
     }
-    async delete(path) {
+    async remove(path) {
       if (!(path instanceof Path)) {
         path = new Path(Path.collapse(path, this.#path));
       }
-      return this.#adapter.delete(path);
+      return this.#adapter.remove(path);
     }
     async exists(path) {
       if (!(path instanceof Path)) {
@@ -189,6 +189,30 @@
         path = new Path(Path.collapse(path, this.#path));
       }
       return this.#adapter.list(path);
+    }
+    async mkdir(path = "") {
+      if (!this.#adapter.supportsWrite()) {
+        throw new Error("Adapter " + this.#adapter.name + " is read only.");
+      }
+      if (!this.#adapter.supportsDirectories) {
+        throw new Error("Adapter " + this.#adapter.name + " does not support directories.");
+      }
+      if (!(path instanceof Path)) {
+        path = new Path(Path.collapse(path, this.#path));
+      }
+      return this.#adapter.mkdir(path);
+    }
+    async rmdir(path = "") {
+      if (!this.#adapter.supportsWrite()) {
+        throw new Error("Adapter " + this.#adapter.name + " is read only.");
+      }
+      if (!this.#adapter.supportsDirectories) {
+        throw new Error("Adapter " + this.#adapter.name + " does not support directories.");
+      }
+      if (!(path instanceof Path)) {
+        path = new Path(Path.collapse(path, this.#path));
+      }
+      return this.#adapter.rmdir(path);
     }
   };
 
@@ -698,6 +722,9 @@
     supportsStreamingRead() {
       return true;
     }
+    supportsDirectories() {
+      return false;
+    }
     cd(path) {
       if (!Path.isPath(path)) {
         throw new TypeError(path + " is not a valid path");
@@ -740,7 +767,7 @@
     async exists(path) {
       return this.#client.head(path);
     }
-    async delete(path) {
+    async remove(path) {
       return this.#client.delete(path);
     }
     async list(path) {
