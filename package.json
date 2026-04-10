@@ -1,6 +1,6 @@
 {
   "name": "@muze-nl/jsfs",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "author": "auke@muze.nl",
   "main": "src/index.mjs",
   "type": "module",
@@ -24,6 +24,5 @@
   "homepage": "https://github.com/muze-nl/jsfs#readme",
   "dependencies": {
     "@muze-nl/metro": "^0.6.15",
-    "jest": "^30.2.0"
   }
 }
