@@ -23,6 +23,6 @@
   },
   "homepage": "https://github.com/muze-nl/jsfs#readme",
   "dependencies": {
-    "@muze-nl/metro": "^0.6.15",
+    "@muze-nl/metro": "^0.6.15"
   }
 }
